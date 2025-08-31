@@ -260,3 +260,44 @@ document.addEventListener("DOMContentLoaded", () => {
     style.innerHTML = `.resaltado { background-color: #ffe082 !important; }`;
     document.head.appendChild(style);
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const loginContainer = document.getElementById("loginContainer");
+    const appContainer = document.getElementById("appContainer");
+    const formLogin = document.getElementById("formLogin");
+    const btnLogout = document.getElementById("btnLogout");
+
+    // Al cargar, mostrar login o app según sesión
+    mostrarPantallaSegunUsuario();
+
+    // Evento login
+    formLogin.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const usuario = document.getElementById("loginUsuario").value;
+        const password = document.getElementById("loginPassword").value;
+
+        if (usuario === "admin" && password === "1234") {
+            localStorage.setItem("usuarioLogueado", usuario);
+            mostrarPantallaSegunUsuario();
+        } else {
+            alert("Usuario o contraseña incorrectos");
+        }
+    });
+
+    // Evento logout
+    btnLogout.addEventListener("click", () => {
+        localStorage.removeItem("usuarioLogueado");
+        mostrarPantallaSegunUsuario();
+    });
+
+    function mostrarPantallaSegunUsuario() {
+        const usuario = localStorage.getItem("usuarioLogueado");
+        if (usuario) {
+            loginContainer.style.display = "none";
+            appContainer.style.display = "block";
+        } else {
+            loginContainer.style.display = "block";
+            appContainer.style.display = "none";
+        }
+    }
+});
