@@ -68,6 +68,7 @@ tr:nth-child(even) {
 
 .input-contenedor {
     width: 90%;
+    position: relative;
 }
 
 .sugerencias {
@@ -80,4 +81,14 @@ tr:nth-child(even) {
     z-index: 10;
     border-radius: 0 0 4px 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Ocultar elementos inicialmente */
+.hidden {
+    display: none !important;
+}
+
+/* Resaltado de fila seleccionada */
+.resaltado {
+    background-color: #ffe082 !important;
 }
