@@ -59,26 +59,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Login ---
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-    sessionStorage.removeItem("usuarioActual"); // Borrar sesión
-    mostrarPantallaSegunUsuario(); // Volver a login
+ // --- Manejo de sesión --- //
+function iniciarSesion(usuario) {
+    sessionStorage.setItem("usuarioActual", usuario);
+    mostrarPantallaSegunUsuario();
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem("usuarioActual");
+    mostrarPantallaSegunUsuario();
+}
+
+function mostrarPantallaSegunUsuario() {
+    const usuario = sessionStorage.getItem("usuarioActual");
+    const loginContainer = document.getElementById("loginContainer");
+    const appContainer = document.getElementById("appContainer");
+
+    if (usuario) {
+        loginContainer.style.display = "none";
+        appContainer.style.display = "block";
+    } else {
+        loginContainer.style.display = "block";
+        appContainer.style.display = "none";
+    }
+}
+
+// --- Listeners --- //
+document.addEventListener("DOMContentLoaded", () => {
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+
+    if (btnLogin) {
+        btnLogin.addEventListener("click", () => {
+            const user = document.getElementById("usuario").value;
+            const pass = document.getElementById("password").value;
+
+            // login simple (ejemplo)
+            if (user === "admin" && pass === "1234") {
+                iniciarSesion(user);
+            } else {
+                alert("Usuario o contraseña incorrectos");
+            }
+        });
+    }
+
+    if (btnLogout) {
+        btnLogout.addEventListener("click", cerrarSesion);
+    }
+
+    mostrarPantallaSegunUsuario(); // inicializa la pantalla correcta
 });
-    formLogin.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const usuario = document.getElementById('loginUsuario').value.trim();
-        const password = document.getElementById('loginPassword').value;
-
-        let usuarios = cargarUsuarios();
-        let encontrado = usuarios.find(u => u.usuario === usuario && u.password === password);
-        if (!encontrado) {
-            alert('Usuario o contraseña incorrectos.');
-            return;
-        }
-
-        sessionStorage.setItem('usuarioActual', JSON.stringify(encontrado));
-        alert('Bienvenido, ' + encontrado.usuario);
-        mostrarPantallaSegunUsuario();
-    });
 
     // --- Stock ---
     function guardarStock() {
