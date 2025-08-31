@@ -59,6 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Login ---
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem("usuarioActual"); // Borrar sesión
+    mostrarPantallaSegunUsuario(); // Volver a login
+});
     formLogin.addEventListener('submit', (e) => {
         e.preventDefault();
         const usuario = document.getElementById('loginUsuario').value.trim();
@@ -225,29 +229,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
     style.innerHTML = `.resaltado { background-color: #ffe082 !important; }`;
     document.head.appendChild(style);
-});
-
-// --- Logout ---
-const btnLogout = document.getElementById('btnLogout');
-
-btnLogout.addEventListener('click', () => {
-    const appContainer = document.getElementById('appContainer');
-    const registroContainer = document.getElementById('registroContainer');
-    const loginContainer = document.getElementById('loginContainer');
-
-    // Fade-out de la app
-    appContainer.classList.remove('fade-in');
-    appContainer.classList.add('fade-out');
-
-    setTimeout(() => {
-        appContainer.classList.add('hidden');
-        sessionStorage.removeItem('usuarioActual');
-
-        // Mostrar login y registro con fade-in
-        registroContainer.classList.remove('hidden', 'fade-out');
-        registroContainer.classList.add('fade-in');
-
-        loginContainer.classList.remove('hidden', 'fade-out');
-        loginContainer.classList.add('fade-in');
-    }, 500); // coincide con la duración del fade
 });

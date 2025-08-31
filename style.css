@@ -92,3 +92,12 @@ tr:nth-child(even) {
 .resaltado {
     background-color: #ffe082 !important;
 }
+
+#logoutBtn {
+    background: #e74c3c;
+    margin-bottom: 15px;
+}
+
+#logoutBtn:hover {
+    background: #c0392b;
+}
