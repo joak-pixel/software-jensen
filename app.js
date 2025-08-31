@@ -1,3 +1,15 @@
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ Script cargado y DOM listo");
+
+    const loginContainer = document.getElementById("loginContainer");
+    const appContainer = document.getElementById("appContainer");
+    const formLogin = document.getElementById("formLogin");
+    const btnLogout = document.getElementById("btnLogout");
+
+    console.log({ loginContainer, appContainer, formLogin, btnLogout });
+});
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // Elementos principales
     const appContainer = document.getElementById('appContainer');
@@ -273,6 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Evento login
     formLogin.addEventListener("submit", (e) => {
         e.preventDefault();
+        alert("evento submit detectado");
         const usuario = document.getElementById("loginUsuario").value;
         const password = document.getElementById("loginPassword").value;
 
