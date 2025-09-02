@@ -1,330 +1,293 @@
-// --- LOGIN / LOGOUT ---
-const formLogin = document.getElementById("formLogin");
-const loginContainer = document.getElementById("loginContainer");
-const appContainer = document.getElementById("appContainer");
-const btnLogout = document.getElementById("btnLogout");
-
-// Escuchar login
-formLogin.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const usuario = document.getElementById("loginUsuario").value;
-    const password = document.getElementById("loginPassword").value;
-
-    if (usuario === "admin" && password === "1234") {
-        loginContainer.style.display = "none";
-        appContainer.style.display = "block";
-    } else {
-        alert("Usuario o contraseña incorrectos");
-    }
-});
-
-// Escuchar logout
-btnLogout.addEventListener("click", () => {
-    appContainer.style.display = "none";
-    loginContainer.style.display = "block";
-    formLogin.reset();
-});
+// Espera a que todo el HTML esté cargado antes de ejecutar el script
 document.addEventListener('DOMContentLoaded', () => {
-    // Elementos principales
+
+    // =============================================================
+    // 1. OBTENER REFERENCIAS A ELEMENTOS DEL DOM
+    // =============================================================
+    // Contenedores principales
     const appContainer = document.getElementById('appContainer');
     const registroContainer = document.getElementById('registroContainer');
     const loginContainer = document.getElementById('loginContainer');
+
+    // Secciones dentro de la App (¡NUEVO!)
+    const seccionAgregar = document.getElementById('seccionAgregar');
+    const seccionRetirar = document.getElementById('seccionRetirar');
+
+    // Formularios
     const formRegistro = document.getElementById('formRegistro');
     const formLogin = document.getElementById('formLogin');
     const formInsumo = document.getElementById('formInsumo');
     const formSalida = document.getElementById('formSalida');
-    const lista = document.getElementById('listaInsumos');
-    const tablaHistorial = document.getElementById('tablaHistorial');
-    const insumoSeleccionado = document.getElementById('insumoSeleccionado');
-    let filaSeleccionada = null;
 
-    // --- Funciones de usuarios ---
-    function guardarUsuarios(usuarios) {
-        localStorage.setItem('usuarios_jensen', JSON.stringify(usuarios));
+    // Botones e Inputs
+    const btnLogout = document.getElementById('btnLogout');
+    const buscador = document.getElementById('buscador');
+    const insumoSeleccionadoInput = document.getElementById('insumoSeleccionado');
+
+    // Tablas y Listas
+    const listaInsumosBody = document.getElementById('listaInsumos');
+    const tablaHistorialBody = document.getElementById('tablaHistorial');
+
+
+    // =============================================================
+    // 2. FUNCIONES DE ALMACENAMIENTO (LocalStorage)
+    // =============================================================
+    const guardarEnStorage = (clave, valor) => localStorage.setItem(clave, JSON.stringify(valor));
+    const cargarDeStorage = (clave) => JSON.parse(localStorage.getItem(clave) || '[]');
+
+    // -- Funciones específicas --
+    const guardarUsuarios = (usuarios) => guardarEnStorage('usuarios_jensen', usuarios);
+    const cargarUsuarios = () => cargarDeStorage('usuarios_jensen');
+    const guardarInsumos = (insumos) => guardarEnStorage('insumos_jensen', insumos);
+    const cargarInsumos = () => cargarDeStorage('insumos_jensen');
+    const guardarHistorial = (historial) => guardarEnStorage('historial_jensen', historial);
+    const cargarHistorial = () => cargarDeStorage('historial_jensen');
+
+
+    // =============================================================
+    // 3. FUNCIONES PARA MANEJAR LA SESIÓN (SessionStorage)
+    // =============================================================
+    function iniciarSesion(usuario) {
+        sessionStorage.setItem('usuarioActual', JSON.stringify(usuario));
+        actualizarVista();
     }
 
-    function cargarUsuarios() {
-        return JSON.parse(localStorage.getItem('usuarios_jensen') || '[]');
+    function cerrarSesion() {
+        sessionStorage.removeItem('usuarioActual');
+        formLogin.reset();
+        actualizarVista();
     }
 
-    function mostrarPantallaSegunUsuario() {
-        const usuarioActual = JSON.parse(sessionStorage.getItem('usuarioActual'));
+    function obtenerUsuarioActual() {
+        return JSON.parse(sessionStorage.getItem('usuarioActual'));
+    }
 
-        if (!usuarioActual) {
-            registroContainer.style.display = 'block';
-            loginContainer.style.display = 'block';
-            appContainer.style.display = 'none';
-        } else {
-            registroContainer.style.display = 'none';
+
+    // =============================================================
+    // 4. FUNCIONES PARA RENDERIZAR (DIBUJAR EN PANTALLA)
+    // =============================================================
+    function renderizarInsumos(filtro = '') {
+        const insumos = cargarInsumos();
+        listaInsumosBody.innerHTML = ''; // Limpiar la tabla antes de dibujar
+
+        const insumosFiltrados = insumos.filter(insumo =>
+            insumo.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+            insumo.tipo.toLowerCase().includes(filtro.toLowerCase())
+        );
+
+        if (insumosFiltrados.length === 0) {
+            listaInsumosBody.innerHTML = '<tr><td colspan="4">No hay insumos en el inventario.</td></tr>';
+            return;
+        }
+
+        insumosFiltrados.forEach(insumo => {
+            const tr = document.createElement('tr');
+            let claseStock = '';
+            if (insumo.cantidad === 0) {
+                claseStock = 'stock-critico';
+            } else if (insumo.cantidad > 0 && insumo.cantidad <= 5) {
+                claseStock = 'stock-advertencia';
+            }
+            tr.className = claseStock;
+
+            tr.innerHTML = `
+                <td>${insumo.nombre}</td>
+                <td>${insumo.cantidad}</td>
+                <td>${insumo.tipo}</td>
+                <td>
+                    <button class="btn-seleccionar" data-nombre="${insumo.nombre}">Seleccionar</button>
+                </td>
+            `;
+            listaInsumosBody.appendChild(tr);
+        });
+    }
+
+    function renderizarHistorial() {
+        const historial = cargarHistorial();
+        tablaHistorialBody.innerHTML = '';
+
+        if (historial.length === 0) {
+            tablaHistorialBody.innerHTML = '<tr><td colspan="3">No hay retiros registrados.</td></tr>';
+            return;
+        }
+        
+        historial.slice().reverse().forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>${new Date(item.fecha).toLocaleString()}</td>
+            `;
+            tablaHistorialBody.appendChild(tr);
+        });
+    }
+
+
+    // =============================================================
+    // 5. FUNCIÓN PARA ACTUALIZAR LA VISTA (UI) (¡MODIFICADO!)
+    // =============================================================
+    function actualizarVista() {
+        const usuarioActual = obtenerUsuarioActual();
+
+        if (usuarioActual) {
+            // --- Hay un usuario logueado ---
             loginContainer.style.display = 'none';
+            registroContainer.style.display = 'none';
             appContainer.style.display = 'block';
-            document.querySelector('.titulo-principal').style.display = 'block';
 
-            // Admin puede ver formulario de agregar stock
-            formInsumo.style.display = usuarioActual.nivel === 'admin' ? 'block' : 'none';
+            renderizarInsumos();
+            renderizarHistorial();
+
+            // --- Lógica de permisos por rol MODIFICADA ---
+            // Ahora controla la visibilidad de las secciones completas
+            if (usuarioActual.nivel === 'administrador') {
+                seccionAgregar.style.display = 'block';
+                seccionRetirar.style.display = 'block';
+            } else if (usuarioActual.nivel === 'operario') {
+                seccionAgregar.style.display = 'none';
+                seccionRetirar.style.display = 'block';
+            }
+
+        } else {
+            // --- No hay nadie logueado ---
+            loginContainer.style.display = 'block';
+            registroContainer.style.display = 'block';
+            appContainer.style.display = 'none';
         }
     }
 
-    // --- Registro ---
+
+    // =============================================================
+    // 6. EVENT LISTENERS (MANEJADORES DE EVENTOS)
+    // =============================================================
+
+    // --- Formulario de REGISTRO ---
     formRegistro.addEventListener('submit', (e) => {
         e.preventDefault();
         const usuario = document.getElementById('regUsuario').value.trim();
         const password = document.getElementById('regPassword').value;
         const nivel = document.getElementById('regNivel').value;
 
+        if (!usuario || !password || !nivel) {
+            alert('Todos los campos son obligatorios.');
+            return;
+        }
+
         let usuarios = cargarUsuarios();
         if (usuarios.some(u => u.usuario === usuario)) {
-            alert('El usuario ya existe.');
+            alert('El nombre de usuario ya existe.');
             return;
         }
 
         usuarios.push({ usuario, password, nivel });
         guardarUsuarios(usuarios);
-        alert('Usuario registrado correctamente.');
+        alert('Usuario registrado correctamente. Ahora puedes iniciar sesión.');
         formRegistro.reset();
     });
 
-    // --- Login ---
- // --- Manejo de sesión --- //
-function iniciarSesion(usuario) {
-    sessionStorage.setItem("usuarioActual", usuario);
-    mostrarPantallaSegunUsuario();
-}
+    // --- Formulario de LOGIN ---
+    formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const usuarioInput = document.getElementById('loginUsuario').value;
+        const passwordInput = document.getElementById('loginPassword').value;
+        const usuarios = cargarUsuarios();
+        const usuarioEncontrado = usuarios.find(u => u.usuario === usuarioInput && u.password === passwordInput);
 
-function cerrarSesion() {
-    sessionStorage.removeItem("usuarioActual");
-    mostrarPantallaSegunUsuario();
-}
+        if (usuarioEncontrado) {
+            iniciarSesion(usuarioEncontrado);
+        } else {
+            alert('Usuario o contraseña incorrectos.');
+        }
+    });
 
-function mostrarPantallaSegunUsuario() {
-    const usuario = sessionStorage.getItem("usuarioActual");
-    const loginContainer = document.getElementById("loginContainer");
-    const appContainer = document.getElementById("appContainer");
+    // --- Botón de LOGOUT ---
+    btnLogout.addEventListener('click', cerrarSesion);
 
-    if (usuario) {
-        loginContainer.style.display = "none";
-        appContainer.style.display = "block";
-    } else {
-        loginContainer.style.display = "block";
-        appContainer.style.display = "none";
-    }
-}
-
-// --- Listeners --- //
-document.addEventListener("DOMContentLoaded", () => {
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
-
-    if (btnLogin) {
-        btnLogin.addEventListener("click", () => {
-            const user = document.getElementById("usuario").value;
-            const pass = document.getElementById("password").value;
-
-            // login simple (ejemplo)
-            if (user === "admin" && pass === "1234") {
-                iniciarSesion(user);
-            } else {
-                alert("Usuario o contraseña incorrectos");
-            }
-        });
-    }
-
-    if (btnLogout) {
-        btnLogout.addEventListener("click", cerrarSesion);
-    }
-
-    mostrarPantallaSegunUsuario(); // inicializa la pantalla correcta
-});
-
-    // --- Stock ---
-    function guardarStock() {
-        const insumos = [];
-        lista.querySelectorAll('tr').forEach(tr => {
-            const tds = tr.querySelectorAll('td');
-            insumos.push({
-                nombre: tds[0].textContent,
-                cantidad: tds[1].textContent,
-                tipo: tds[2].textContent
-            });
-        });
-        localStorage.setItem('stock_jensen', JSON.stringify(insumos));
-    }
-
-    function cargarStock() {
-        const insumos = JSON.parse(localStorage.getItem('stock_jensen') || '[]');
-        lista.innerHTML = '';
-        insumos.forEach(insumo => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${insumo.nombre}</td>
-                <td>${insumo.cantidad}</td>
-                <td>${insumo.tipo}</td>
-                <td>
-                    <button class="editar">Editar</button>
-                    <button class="eliminar">Eliminar</button>
-                    <button class="seleccionar">Seleccionar</button>
-                </td>
-            `;
-            lista.appendChild(tr);
-        });
-    }
-
+    // --- Formulario para AGREGAR INSUMO ---
     formInsumo.addEventListener('submit', (e) => {
         e.preventDefault();
         const nombre = document.getElementById('nombre').value.trim();
-        const cantidad = document.getElementById('cantidad').value.trim();
+        const cantidad = parseInt(document.getElementById('cantidad').value);
         const tipo = document.getElementById('tipo').value.trim();
 
-        if (!nombre || !cantidad || !tipo) return;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${nombre}</td>
-            <td>${cantidad}</td>
-            <td>${tipo}</td>
-            <td>
-                <button class="editar">Editar</button>
-                <button class="eliminar">Eliminar</button>
-                <button class="seleccionar">Seleccionar</button>
-            </td>
-        `;
-        lista.appendChild(tr);
-        formInsumo.reset();
-        guardarStock();
-    });
-
-    lista.addEventListener('click', (e) => {
-        const tr = e.target.closest('tr');
-        if (e.target.classList.contains('eliminar')) {
-            if (confirm('¿Seguro que deseas eliminar este insumo?')) {
-                if (filaSeleccionada === tr) {
-                    insumoSeleccionado.value = '';
-                    filaSeleccionada.classList.remove('resaltado');
-                    filaSeleccionada = null;
-                }
-                tr.remove();
-                guardarStock();
-            }
-        } else if (e.target.classList.contains('editar')) {
-            const tds = tr.querySelectorAll('td');
-            document.getElementById('nombre').value = tds[0].textContent;
-            document.getElementById('cantidad').value = tds[1].textContent;
-            document.getElementById('tipo').value = tds[2].textContent;
-            tr.remove();
-            guardarStock();
-        } else if (e.target.classList.contains('seleccionar')) {
-            if (filaSeleccionada) filaSeleccionada.classList.remove('resaltado');
-            filaSeleccionada = tr;
-            filaSeleccionada.classList.add('resaltado');
-            insumoSeleccionado.value = tr.querySelector('td').textContent;
+        if (!nombre || !tipo || isNaN(cantidad) || cantidad <= 0) {
+            alert('Por favor, complete todos los campos correctamente.');
+            return;
         }
+
+        let insumos = cargarInsumos();
+        const insumoExistente = insumos.find(ins => ins.nombre.toLowerCase() === nombre.toLowerCase());
+
+        if (insumoExistente) {
+            insumoExistente.cantidad += cantidad;
+        } else {
+            insumos.push({ nombre, cantidad, tipo });
+        }
+
+        guardarInsumos(insumos);
+        renderizarInsumos();
+        formInsumo.reset();
+        alert('Stock agregado correctamente.');
     });
 
-    // --- Historial ---
-    function guardarHistorial() {
-        const historial = [];
-        tablaHistorial.querySelectorAll('tr').forEach(tr => {
-            const tds = tr.querySelectorAll('td');
-            historial.push({
-                nombre: tds[0].textContent,
-                cantidad: tds[1].textContent,
-                fecha: tds[2].textContent
-            });
-        });
-        localStorage.setItem('historial_jensen', JSON.stringify(historial));
-    }
-
-    function cargarHistorial() {
-        const historial = JSON.parse(localStorage.getItem('historial_jensen') || '[]');
-        tablaHistorial.innerHTML = '';
-        historial.forEach(registro => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${registro.nombre}</td>
-                <td>${registro.cantidad}</td>
-                <td>${registro.fecha}</td>
-            `;
-            tablaHistorial.appendChild(tr);
-        });
-    }
-
+    // --- Formulario para RETIRAR INSUMO ---
     formSalida.addEventListener('submit', (e) => {
         e.preventDefault();
-        const nombre = insumoSeleccionado.value.trim();
-        const cantidadRetiro = document.getElementById('cantidadRetiro').value.trim();
+        const nombreInsumo = insumoSeleccionadoInput.value;
+        const cantidadRetiro = parseInt(document.getElementById('cantidadRetiro').value);
 
-        if (!nombre) return alert('Debes seleccionar un insumo.');
-        if (!cantidadRetiro || isNaN(cantidadRetiro) || cantidadRetiro <= 0) return alert('Cantidad inválida.');
-
-        const tr = document.createElement('tr');
-        const fecha = new Date().toLocaleString();
-        tr.innerHTML = `<td>${nombre}</td><td>${cantidadRetiro}</td><td>${fecha}</td>`;
-        tablaHistorial.appendChild(tr);
-        guardarHistorial();
-
-        if (filaSeleccionada) {
-            let cantidadActual = parseInt(filaSeleccionada.querySelectorAll('td')[1].textContent, 10);
-            let cantidadARetirar = parseInt(cantidadRetiro, 10);
-            if (cantidadARetirar > cantidadActual) return alert('No hay suficiente stock.');
-            filaSeleccionada.querySelectorAll('td')[1].textContent = cantidadActual - cantidadARetirar;
+        if (!nombreInsumo || isNaN(cantidadRetiro) || cantidadRetiro <= 0) {
+            alert('Seleccione un insumo y especifique una cantidad válida.');
+            return;
         }
 
-        insumoSeleccionado.value = '';
-        filaSeleccionada?.classList.remove('resaltado');
-        filaSeleccionada = null;
-        document.getElementById('cantidadRetiro').value = '';
-        guardarStock();
+        let insumos = cargarInsumos();
+        const insumo = insumos.find(ins => ins.nombre === nombreInsumo);
+
+        if (!insumo) {
+            alert('El insumo seleccionado ya no existe.');
+            return;
+        }
+        if (insumo.cantidad < cantidadRetiro) {
+            alert(`No hay stock suficiente. Stock actual: ${insumo.cantidad}`);
+            return;
+        }
+        
+        insumo.cantidad -= cantidadRetiro;
+        guardarInsumos(insumos);
+
+        let historial = cargarHistorial();
+        historial.push({
+            nombre: nombreInsumo,
+            cantidad: cantidadRetiro,
+            fecha: new Date().toISOString()
+        });
+        guardarHistorial(historial);
+
+        renderizarInsumos();
+        renderizarHistorial();
+        formSalida.reset();
+        alert('Stock retirado correctamente.');
+    });
+    
+    // --- Botón SELECCIONAR en la lista de insumos ---
+    listaInsumosBody.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('btn-seleccionar')) {
+            const nombre = e.target.getAttribute('data-nombre');
+            insumoSeleccionadoInput.value = nombre;
+        }
     });
 
-    // --- Inicialización ---
-    mostrarPantallaSegunUsuario();
-    cargarStock();
-    cargarHistorial();
+    // --- BUSCADOR de insumos ---
+    buscador.addEventListener('input', (e) => {
+        renderizarInsumos(e.target.value);
+    });
 
-    // --- Estilo resaltado ---
-    const style = document.createElement('style');
-    style.innerHTML = `.resaltado { background-color: #ffe082 !important; }`;
-    document.head.appendChild(style);
+
+    // =============================================================
+    // 7. INICIALIZACIÓN
+    // =============================================================
+    actualizarVista();
+
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const loginContainer = document.getElementById("loginContainer");
-    const appContainer = document.getElementById("appContainer");
-    const formLogin = document.getElementById("formLogin");
-    const btnLogout = document.getElementById("btnLogout");
-
-    // Al cargar, mostrar login o app según sesión
-    mostrarPantallaSegunUsuario();
-
-    // Evento login
-    formLogin.addEventListener("submit", (e) => {
-        e.preventDefault();
-        alert("evento submit detectado");
-        const usuario = document.getElementById("loginUsuario").value;
-        const password = document.getElementById("loginPassword").value;
-
-        if (usuario === "admin" && password === "1234") {
-            localStorage.setItem("usuarioLogueado", usuario);
-            mostrarPantallaSegunUsuario();
-        } else {
-            alert("Usuario o contraseña incorrectos");
-        }
-    });
-
-    // Evento logout
-    btnLogout.addEventListener("click", () => {
-        localStorage.removeItem("usuarioLogueado");
-        mostrarPantallaSegunUsuario();
-    });
-
-    function mostrarPantallaSegunUsuario() {
-        const usuario = localStorage.getItem("usuarioLogueado");
-        if (usuario) {
-            loginContainer.style.display = "none";
-            appContainer.style.display = "block";
-        } else {
-            loginContainer.style.display = "block";
-            appContainer.style.display = "none";
-        }
-    }
-});
