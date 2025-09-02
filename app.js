@@ -1,15 +1,29 @@
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ Script cargado y DOM listo");
+// --- LOGIN / LOGOUT ---
+const formLogin = document.getElementById("formLogin");
+const loginContainer = document.getElementById("loginContainer");
+const appContainer = document.getElementById("appContainer");
+const btnLogout = document.getElementById("btnLogout");
 
-    const loginContainer = document.getElementById("loginContainer");
-    const appContainer = document.getElementById("appContainer");
-    const formLogin = document.getElementById("formLogin");
-    const btnLogout = document.getElementById("btnLogout");
+// Escuchar login
+formLogin.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const usuario = document.getElementById("loginUsuario").value;
+    const password = document.getElementById("loginPassword").value;
 
-    console.log({ loginContainer, appContainer, formLogin, btnLogout });
+    if (usuario === "admin" && password === "1234") {
+        loginContainer.style.display = "none";
+        appContainer.style.display = "block";
+    } else {
+        alert("Usuario o contraseña incorrectos");
+    }
 });
 
-
+// Escuchar logout
+btnLogout.addEventListener("click", () => {
+    appContainer.style.display = "none";
+    loginContainer.style.display = "block";
+    formLogin.reset();
+});
 document.addEventListener('DOMContentLoaded', () => {
     // Elementos principales
     const appContainer = document.getElementById('appContainer');
