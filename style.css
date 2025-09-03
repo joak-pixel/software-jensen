@@ -1,168 +1,216 @@
 /* ============================================================= */
-/* ESTILOS GENERALES Y TIPOGRAFÍA                                */
+/* 1. ESTILOS GENERALES Y FUENTE                                 */
 /* ============================================================= */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+* {
+    box-sizing: border-box;
     margin: 0;
-    padding: 2rem;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f8f9fa;
+    color: #333;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
     min-height: 100vh;
 }
 
-h1, h2 {
-    color: #1c2e4a;
-    margin-top: 0;
+main {
+    flex-grow: 1;
 }
-
-hr {
-    border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 2rem 0;
-}
-
 
 /* ============================================================= */
-/* CONTENEDORES PRINCIPALES (Login, Registro, App)              */
+/* 2. CONTENEDORES DE LOGIN Y REGISTRO                           */
 /* ============================================================= */
 #loginContainer,
 #registroContainer {
-    width: 100%;
-    max-width: 400px;
-    background: #ffffff;
+    max-width: 420px;
+    margin: 4rem auto;
     padding: 2rem;
+    background-color: #494848; /* Fondo oscuro original */
+    color: #f8f9fa;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-#appContainer {
-    width: 100%;
-    max-width: 900px;
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+#loginContainer h2,
+#registroContainer h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
+/* Estilo para el enlace que cambia entre login y registro */
+.form-switcher {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.form-switcher a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+.form-switcher a:hover {
+    text-decoration: underline;
+}
 
 /* ============================================================= */
-/* FORMULARIOS, INPUTS Y BOTONES                                 */
+/* 3. FORMULARIOS Y ELEMENTOS COMUNES                            */
 /* ============================================================= */
-form {
-    display: flex;
-    flex-direction: column;
-}
-
 input[type="text"],
 input[type="number"],
 input[type="password"],
 select {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     margin-bottom: 1rem;
     border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
+    border-radius: 4px;
     font-size: 1rem;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 button {
-    background: #007bff;
-    color: #ffffff;
+    width: 100%;
+    padding: 12px;
     border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    cursor: pointer;
+    border-radius: 4px;
+    background-color: #b11c1c; /* Rojo del logo */
+    color: white;
     font-size: 1rem;
     font-weight: bold;
-    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 button:hover {
-    background: #0056b3;
+    background-color: #d90429; /* Un rojo un poco más claro */
 }
 
+/* ============================================================= */
+/* 4. CONTENEDOR PRINCIPAL DE LA APP (#appContainer)             */
+/* ============================================================= */
+#appContainer {
+    max-width: 1200px; /* Ancho máximo para evitar que se estire */
+    margin: 0 auto;
+    padding: 2rem;
+}
 
-/* ============================================================= */
-/* ESTILOS ESPECÍFICOS DE LA APP                                 */
-/* ============================================================= */
 #appContainer header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
     border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.app-logo-header {
+    height: 90px;
+}
+
+#appContainer header h1 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.8rem;
+    color: #2c3e50;
 }
 
 #btnLogout {
-    background: #dc3545; /* Rojo para acción de "peligro" o salida */
+    width: auto;
+    background-color: #e74c3c;
+}
+#btnLogout:hover {
+    background-color: #c0392b;
 }
 
-#btnLogout:hover {
-    background: #c82333;
+/* SOLUCIÓN AL PROBLEMA DE "COLUMNA" */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Una columna en móviles */
+    gap: 2rem;
+}
+/* En pantallas más anchas, dos columnas */
+@media (min-width: 992px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 #appContainer section {
-    margin-bottom: 2rem;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+#appContainer section h2 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
 
 /* ============================================================= */
-/* TABLAS                                                        */
+/* 5. TABLA DE INVENTARIO                                        */
 /* ============================================================= */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-
 th, td {
-    border: 1px solid #ddd;
     padding: 12px;
+    border: 1px solid #ddd;
     text-align: left;
 }
-
 th {
-    background: #f8f9fa;
-    font-weight: bold;
-    color: #333;
+    background-color: #2c3e50;
+    color: white;
 }
-
-/* Color de fila alterno para mejor legibilidad */
-tr:nth-child(even) {
-    background: #fdfdfd;
-}
-
-.btn-seleccionar {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-}
-
+.stock-advertencia { background-color: #fff3cd !important; }
+.stock-critico { background-color: #f8d7da !important; color: #721c24; }
 
 /* ============================================================= */
-/* ESTILOS PARA LAS ALERTAS DE STOCK (¡NUEVO!)                   */
+/* 6. FOOTER                                                     */
+/* ============================================================= */
+footer {
+    width: 100%;
+    padding: 2rem 0;
+    margin-top: auto;
+    border-top: 1px solid #e0e0e0;
+    background-color: #ffffff;
+}
+.footer-logo {
+    display: block;
+    margin: 0 auto;
+    max-width: 180px;
+}
+
+/* ============================================================= */
+/* 7. EFECTOS Y ANIMACIONES                                      */
 /* ============================================================= */
 
-/* Amarillo para advertencia de stock bajo (5 o menos) */
-.stock-advertencia {
-    background-color: #fff3cd !important; /* !important para sobreescribir el color de fila alterno */
-    font-weight: 500;
+/* Estilo para la fila resaltada al seleccionar un insumo */
+.resaltado {
+    background-color: #d1ecf1 !important; /* Un azul claro para la selección */
+    transition: background-color 0.3s ease;
 }
 
-/* Rojo para stock crítico (cero) */
-.stock-critico {
-    background-color: #f8d7da !important;
-    color: #721c24;
-    font-weight: bold;
+/* Define la animación del destello (glow) */
+@keyframes flash {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); /* Rojo, transparente */
+    }
+    50% {
+        box-shadow: 0 0 6px 4px rgba(220, 53, 69, 0.5); /* Sombra roja visible */
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); /* Rojo, transparente */
+    }
 }
+
+/* Clase que aplica la animación al input */
+.flash-effect {
+    animation: flash 1.5s ease-out;
+}
+/* ============================================================= */

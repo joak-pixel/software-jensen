@@ -7,53 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <main>
+        <!-- ============================================================= -->
+        <!-- CONTENEDOR DE REGISTRO (Oculto por defecto)                 -->
+        <!-- ============================================================= -->
+        <div id="registroContainer" style="display: none;">
+            <h2>Registrarse en el Sistema</h2>
+            <form id="formRegistro">
+                <input type="text" id="regUsuario" placeholder="Crear nombre de usuario" required>
+                <input type="password" id="regPassword" placeholder="Crear contraseña" required>
+                <select id="regNivel" required>
+                    <option value="" disabled selected>-- Selecciona un rol --</option>
+                    <option value="operario">Operario (Solo retira stock)</option>
+                    <option value="administrador">Administrador (Agrega y retira stock)</option>
+                </select>
+                <button type="submit">Registrar</button>
+            </form>
+            <p class="form-switcher">¿Ya tienes una cuenta? <a href="#" id="linkLogin">Inicia sesión</a></p>
+        </div>
 
-    <div id="registroContainer">
-        <h2>Registrarse</h2>
-        <form id="formRegistro">
-            <input type="text" id="regUsuario" placeholder="Crear nombre de usuario" required>
-            <input type="password" id="regPassword" placeholder="Crear contraseña" required>
+        <!-- ============================================================= -->
+        <!-- CONTENEDOR DE LOGIN (Visible por defecto)                   -->
+        <!-- ============================================================= -->
+        <div id="loginContainer">
+            <h2>Iniciar Sesión</h2>
+            <form id="formLogin">
+                <input type="text" id="loginUsuario" placeholder="Usuario" required>
+                <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                <button type="submit">Ingresar</button>
+            </form>
+            <p class="form-switcher">¿No tienes una cuenta? <a href="#" id="linkRegistro">Regístrate aquí</a></p>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- CONTENEDOR PRINCIPAL DE LA APLICACIÓN                       -->
+        <!-- ============================================================= -->
+        <div id="appContainer" style="display:none;">
+            <header>
+                <img src="img/jensen_logo.png" alt="Logo Jensen" class="app-logo-header">
+                <h1>Sistema de Control de Stock</h1>
+                <button id="btnLogout">Cerrar Sesión</button>
+            </header>
             
-            <select id="regNivel" required>
-                <option value="" disabled selected>Selecciona un rol</option>
-                <option value="operario">Operario (Solo retira stock)</option>
-                <option value="administrador">Administrador (Agrega y retira stock)</option>
-            </select>
-            
-            <button type="submit">Registrar</button>
-        </form>
-    </div>
-
-    <div id="loginContainer">
-        <h2>Iniciar Sesión</h2>
-        <form id="formLogin">
-            <input type="text" id="loginUsuario" placeholder="Usuario" required>
-            <input type="password" id="loginPassword" placeholder="Contraseña" required>
-            <button type="submit">Ingresar</button>
-        </form>
-    </div>
-
-    <div id="appContainer" style="display:none;">
-        <header>
-            <h1>Sistema de Control de Stock</h1>
-            <button id="btnLogout">Cerrar Sesión</button>
-        </header>
-
-        <main>
-            <section id="seccionAgregar">
-                <h2>Agregar Insumo al Stock</h2>
-                <form id="formInsumo">
-                    <input type="text" id="nombre" placeholder="Nombre del insumo" required>
-                    <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
-                    <div class="input-contenedor" style="position: relative; display: inline-block;">
+            <div class="form-grid">
+                <section id="seccionAgregar">
+                    <h2>Agregar Insumo</h2>
+                    <form id="formInsumo">
+                        <input type="text" id="nombre" placeholder="Nombre del insumo" required>
+                        <input type="number" id="cantidad" min="1" required>
                         <input type="text" id="tipo" placeholder="Tipo de insumo" required>
-                        <div id="sugerenciasTipo" class="sugerencias"></div>
-                    </div>
-                    <button type="submit">Agregar</button>
-                </form>
-            </section>
-
-            <hr>
+                        <button type="submit">Agregar</button>
+                    </form>
+                </section>
+                <section id="seccionRetirar">
+                    <h2>Salida de Stock</h2>
+                    <form id="formSalida">
+                        <input type="text" id="insumoSeleccionado" placeholder="Seleccione un insumo de la lista" readonly required>
+                        <input type="number" id="cantidadRetiro" min="1" required>
+                        <button type="submit">Retirar</button>
+                    </form>
+                </section>
+            </div>
 
             <section id="seccionLista">
                 <h2>Inventario Actual</h2>
@@ -71,19 +85,6 @@
                 </table>
             </section>
             
-            <hr>
-
-            <section id="seccionRetirar">
-                <h2>Salida de Stock</h2>
-                <form id="formSalida">
-                    <input type="text" id="insumoSeleccionado" placeholder="Seleccione un insumo de la lista" readonly required>
-                    <input type="number" id="cantidadRetiro" placeholder="Cantidad a retirar" min="1" required>
-                    <button type="submit">Retirar</button>
-                </form>
-            </section>
-
-            <hr>
-
             <section id="seccionHistorial">
                 <h2>Historial de Retiros</h2>
                 <table>
@@ -97,9 +98,14 @@
                     <tbody id="tablaHistorial"></tbody>
                 </table>
             </section>
-        </main>
-    </div>
+        </div>
+    </main>
+
+    <footer>
+        <img src="img/jensen_logo.png" alt="Logo Jensen" class="footer-logo">
+    </footer>
 
     <script src="app.js"></script>
 </body>
 </html>
+

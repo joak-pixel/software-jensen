@@ -1,136 +1,52 @@
-// Espera a que todo el HTML esté cargado antes de ejecutar el script
 document.addEventListener('DOMContentLoaded', () => {
 
     // =============================================================
     // 1. OBTENER REFERENCIAS A ELEMENTOS DEL DOM
     // =============================================================
-    // Contenedores principales
     const appContainer = document.getElementById('appContainer');
     const registroContainer = document.getElementById('registroContainer');
     const loginContainer = document.getElementById('loginContainer');
-
-    // Secciones dentro de la App (¡NUEVO!)
-    const seccionAgregar = document.getElementById('seccionAgregar');
-    const seccionRetirar = document.getElementById('seccionRetirar');
-
-    // Formularios
     const formRegistro = document.getElementById('formRegistro');
     const formLogin = document.getElementById('formLogin');
     const formInsumo = document.getElementById('formInsumo');
     const formSalida = document.getElementById('formSalida');
-
-    // Botones e Inputs
     const btnLogout = document.getElementById('btnLogout');
+    const seccionAgregar = document.getElementById('seccionAgregar');
+    const seccionRetirar = document.getElementById('seccionRetirar');
+    const listaInsumos = document.getElementById('listaInsumos');
+    const tablaHistorial = document.getElementById('tablaHistorial'); 
     const buscador = document.getElementById('buscador');
-    const insumoSeleccionadoInput = document.getElementById('insumoSeleccionado');
+    const linkRegistro = document.getElementById('linkRegistro');
+    const linkLogin = document.getElementById('linkLogin');
 
-    // Tablas y Listas
-    const listaInsumosBody = document.getElementById('listaInsumos');
-    const tablaHistorialBody = document.getElementById('tablaHistorial');
-
+    let filaSeleccionada = null;
 
     // =============================================================
     // 2. FUNCIONES DE ALMACENAMIENTO (LocalStorage)
     // =============================================================
-    const guardarEnStorage = (clave, valor) => localStorage.setItem(clave, JSON.stringify(valor));
-    const cargarDeStorage = (clave) => JSON.parse(localStorage.getItem(clave) || '[]');
-
-    // -- Funciones específicas --
-    const guardarUsuarios = (usuarios) => guardarEnStorage('usuarios_jensen', usuarios);
-    const cargarUsuarios = () => cargarDeStorage('usuarios_jensen');
-    const guardarInsumos = (insumos) => guardarEnStorage('insumos_jensen', insumos);
-    const cargarInsumos = () => cargarDeStorage('insumos_jensen');
-    const guardarHistorial = (historial) => guardarEnStorage('historial_jensen', historial);
-    const cargarHistorial = () => cargarDeStorage('historial_jensen');
-
+    const guardar = (clave, valor) => localStorage.setItem(clave, JSON.stringify(valor));
+    const cargar = (clave) => JSON.parse(localStorage.getItem(clave) || '[]');
 
     // =============================================================
-    // 3. FUNCIONES PARA MANEJAR LA SESIÓN (SessionStorage)
+    // 3. FUNCIONES DE SESIÓN Y VISTA
     // =============================================================
-    function iniciarSesion(usuario) {
+    const iniciarSesion = (usuario) => {
         sessionStorage.setItem('usuarioActual', JSON.stringify(usuario));
         actualizarVista();
-    }
+    };
 
-    function cerrarSesion() {
+    const cerrarSesion = () => {
         sessionStorage.removeItem('usuarioActual');
         formLogin.reset();
         actualizarVista();
-    }
+    };
 
-    function obtenerUsuarioActual() {
-        return JSON.parse(sessionStorage.getItem('usuarioActual'));
-    }
+    const obtenerUsuarioActual = () => JSON.parse(sessionStorage.getItem('usuarioActual'));
 
-
-    // =============================================================
-    // 4. FUNCIONES PARA RENDERIZAR (DIBUJAR EN PANTALLA)
-    // =============================================================
-    function renderizarInsumos(filtro = '') {
-        const insumos = cargarInsumos();
-        listaInsumosBody.innerHTML = ''; // Limpiar la tabla antes de dibujar
-
-        const insumosFiltrados = insumos.filter(insumo =>
-            insumo.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-            insumo.tipo.toLowerCase().includes(filtro.toLowerCase())
-        );
-
-        if (insumosFiltrados.length === 0) {
-            listaInsumosBody.innerHTML = '<tr><td colspan="4">No hay insumos en el inventario.</td></tr>';
-            return;
-        }
-
-        insumosFiltrados.forEach(insumo => {
-            const tr = document.createElement('tr');
-            let claseStock = '';
-            if (insumo.cantidad === 0) {
-                claseStock = 'stock-critico';
-            } else if (insumo.cantidad > 0 && insumo.cantidad <= 5) {
-                claseStock = 'stock-advertencia';
-            }
-            tr.className = claseStock;
-
-            tr.innerHTML = `
-                <td>${insumo.nombre}</td>
-                <td>${insumo.cantidad}</td>
-                <td>${insumo.tipo}</td>
-                <td>
-                    <button class="btn-seleccionar" data-nombre="${insumo.nombre}">Seleccionar</button>
-                </td>
-            `;
-            listaInsumosBody.appendChild(tr);
-        });
-    }
-
-    function renderizarHistorial() {
-        const historial = cargarHistorial();
-        tablaHistorialBody.innerHTML = '';
-
-        if (historial.length === 0) {
-            tablaHistorialBody.innerHTML = '<tr><td colspan="3">No hay retiros registrados.</td></tr>';
-            return;
-        }
-        
-        historial.slice().reverse().forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.nombre}</td>
-                <td>${item.cantidad}</td>
-                <td>${new Date(item.fecha).toLocaleString()}</td>
-            `;
-            tablaHistorialBody.appendChild(tr);
-        });
-    }
-
-
-    // =============================================================
-    // 5. FUNCIÓN PARA ACTUALIZAR LA VISTA (UI) (¡MODIFICADO!)
-    // =============================================================
     function actualizarVista() {
         const usuarioActual = obtenerUsuarioActual();
 
         if (usuarioActual) {
-            // --- Hay un usuario logueado ---
             loginContainer.style.display = 'none';
             registroContainer.style.display = 'none';
             appContainer.style.display = 'block';
@@ -138,8 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarInsumos();
             renderizarHistorial();
 
-            // --- Lógica de permisos por rol MODIFICADA ---
-            // Ahora controla la visibilidad de las secciones completas
             if (usuarioActual.nivel === 'administrador') {
                 seccionAgregar.style.display = 'block';
                 seccionRetirar.style.display = 'block';
@@ -147,52 +61,102 @@ document.addEventListener('DOMContentLoaded', () => {
                 seccionAgregar.style.display = 'none';
                 seccionRetirar.style.display = 'block';
             }
-
         } else {
-            // --- No hay nadie logueado ---
             loginContainer.style.display = 'block';
-            registroContainer.style.display = 'block';
+            registroContainer.style.display = 'none';
             appContainer.style.display = 'none';
         }
     }
 
+    // =============================================================
+    // 4. LÓGICA DE INVENTARIO E HISTORIAL
+    // =============================================================
+    function renderizarInsumos(filtro = '') {
+        const insumos = cargar('insumos_jensen');
+        listaInsumos.innerHTML = '';
+        const filtroLowerCase = filtro.toLowerCase();
+
+        const insumosFiltrados = insumos.filter(insumo => 
+            insumo.nombre.toLowerCase().includes(filtroLowerCase) ||
+            insumo.tipo.toLowerCase().includes(filtroLowerCase)
+        );
+
+        insumosFiltrados.forEach(insumo => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${insumo.nombre}</td>
+                <td>${insumo.cantidad}</td>
+                <td>${insumo.tipo}</td>
+                <td><button class="btn-seleccionar" data-nombre="${insumo.nombre}">Seleccionar</button></td>
+            `;
+
+            if (insumo.cantidad === 0) {
+                tr.classList.add('stock-critico');
+            } else if (insumo.cantidad <= 5) {
+                tr.classList.add('stock-advertencia');
+            }
+
+            listaInsumos.appendChild(tr);
+        });
+    }
+
+    function renderizarHistorial() {
+        const historial = cargar('historial_jensen');
+        tablaHistorial.innerHTML = '';
+        historial.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>${new Date(item.fecha).toLocaleString()}</td>
+            `;
+            tablaHistorial.appendChild(tr);
+        });
+    }
 
     // =============================================================
-    // 6. EVENT LISTENERS (MANEJADORES DE EVENTOS)
+    // 5. EVENT LISTENERS
     // =============================================================
+    linkRegistro.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginContainer.style.display = 'none';
+        registroContainer.style.display = 'block';
+    });
 
-    // --- Formulario de REGISTRO ---
+    linkLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        registroContainer.style.display = 'none';
+        loginContainer.style.display = 'block';
+    });
+    
     formRegistro.addEventListener('submit', (e) => {
         e.preventDefault();
         const usuario = document.getElementById('regUsuario').value.trim();
         const password = document.getElementById('regPassword').value;
         const nivel = document.getElementById('regNivel').value;
-
         if (!usuario || !password || !nivel) {
             alert('Todos los campos son obligatorios.');
             return;
         }
-
-        let usuarios = cargarUsuarios();
+        let usuarios = cargar('usuarios_jensen');
         if (usuarios.some(u => u.usuario === usuario)) {
             alert('El nombre de usuario ya existe.');
             return;
         }
-
         usuarios.push({ usuario, password, nivel });
-        guardarUsuarios(usuarios);
-        alert('Usuario registrado correctamente. Ahora puedes iniciar sesión.');
+        guardar('usuarios_jensen', usuarios);
+        alert('Usuario registrado. Ahora puedes iniciar sesión.');
         formRegistro.reset();
+        registroContainer.style.display = 'none';
+        loginContainer.style.display = 'block';
     });
 
-    // --- Formulario de LOGIN ---
     formLogin.addEventListener('submit', (e) => {
         e.preventDefault();
         const usuarioInput = document.getElementById('loginUsuario').value;
         const passwordInput = document.getElementById('loginPassword').value;
-        const usuarios = cargarUsuarios();
+        const usuarios = cargar('usuarios_jensen');
         const usuarioEncontrado = usuarios.find(u => u.usuario === usuarioInput && u.password === passwordInput);
-
         if (usuarioEncontrado) {
             iniciarSesion(usuarioEncontrado);
         } else {
@@ -200,92 +164,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Botón de LOGOUT ---
     btnLogout.addEventListener('click', cerrarSesion);
 
-    // --- Formulario para AGREGAR INSUMO ---
     formInsumo.addEventListener('submit', (e) => {
         e.preventDefault();
         const nombre = document.getElementById('nombre').value.trim();
         const cantidad = parseInt(document.getElementById('cantidad').value);
         const tipo = document.getElementById('tipo').value.trim();
-
         if (!nombre || !tipo || isNaN(cantidad) || cantidad <= 0) {
-            alert('Por favor, complete todos los campos correctamente.');
+            alert('Por favor, completa todos los campos correctamente.');
             return;
         }
-
-        let insumos = cargarInsumos();
-        const insumoExistente = insumos.find(ins => ins.nombre.toLowerCase() === nombre.toLowerCase());
-
+        let insumos = cargar('insumos_jensen');
+        const insumoExistente = insumos.find(i => i.nombre.toLowerCase() === nombre.toLowerCase());
         if (insumoExistente) {
             insumoExistente.cantidad += cantidad;
         } else {
             insumos.push({ nombre, cantidad, tipo });
         }
-
-        guardarInsumos(insumos);
+        guardar('insumos_jensen', insumos);
         renderizarInsumos();
         formInsumo.reset();
-        alert('Stock agregado correctamente.');
+    });
+    
+    listaInsumos.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-seleccionar')) {
+            const nombre = e.target.getAttribute('data-nombre');
+            document.getElementById('insumoSeleccionado').value = nombre;
+
+            if (filaSeleccionada) {
+                filaSeleccionada.classList.remove('resaltado');
+            }
+            filaSeleccionada = e.target.closest('tr');
+            filaSeleccionada.classList.add('resaltado');
+            
+            // --- INICIO DE NUEVAS FUNCIONALIDADES ---
+
+            // 1. Mover la vista hacia el formulario de retiro con un scroll suave.
+            seccionRetirar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 2. Aplicar efecto de destello al campo de cantidad y enfocarlo.
+            const cantidadRetiroInput = document.getElementById('cantidadRetiro');
+            cantidadRetiroInput.classList.add('flash-effect');
+            cantidadRetiroInput.focus();
+
+            // 3. Quitar la clase del efecto después de 1.5 segundos para que pueda repetirse.
+            setTimeout(() => {
+                cantidadRetiroInput.classList.remove('flash-effect');
+            }, 1500); 
+        }
     });
 
-    // --- Formulario para RETIRAR INSUMO ---
     formSalida.addEventListener('submit', (e) => {
         e.preventDefault();
-        const nombreInsumo = insumoSeleccionadoInput.value;
+        const nombre = document.getElementById('insumoSeleccionado').value;
         const cantidadRetiro = parseInt(document.getElementById('cantidadRetiro').value);
 
-        if (!nombreInsumo || isNaN(cantidadRetiro) || cantidadRetiro <= 0) {
-            alert('Seleccione un insumo y especifique una cantidad válida.');
+        if (!nombre || isNaN(cantidadRetiro) || cantidadRetiro <= 0) {
+            alert('Selecciona un insumo y especifica una cantidad válida.');
             return;
         }
-
-        let insumos = cargarInsumos();
-        const insumo = insumos.find(ins => ins.nombre === nombreInsumo);
+        let insumos = cargar('insumos_jensen');
+        const insumo = insumos.find(i => i.nombre === nombre);
 
         if (!insumo) {
-            alert('El insumo seleccionado ya no existe.');
+            alert("Error: El insumo seleccionado no se encontró.");
             return;
         }
-        if (insumo.cantidad < cantidadRetiro) {
-            alert(`No hay stock suficiente. Stock actual: ${insumo.cantidad}`);
-            return;
-        }
-        
-        insumo.cantidad -= cantidadRetiro;
-        guardarInsumos(insumos);
 
-        let historial = cargarHistorial();
-        historial.push({
-            nombre: nombreInsumo,
-            cantidad: cantidadRetiro,
-            fecha: new Date().toISOString()
-        });
-        guardarHistorial(historial);
+        if (insumo.cantidad < cantidadRetiro) {
+            alert('No hay stock suficiente para retirar esa cantidad.');
+            return;
+        }
+        insumo.cantidad -= cantidadRetiro;
+        guardar('insumos_jensen', insumos);
+
+        let historial = cargar('historial_jensen');
+        historial.unshift({ nombre, cantidad: cantidadRetiro, fecha: new Date() });
+        guardar('historial_jensen', historial);
 
         renderizarInsumos();
         renderizarHistorial();
         formSalida.reset();
-        alert('Stock retirado correctamente.');
-    });
-    
-    // --- Botón SELECCIONAR en la lista de insumos ---
-    listaInsumosBody.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('btn-seleccionar')) {
-            const nombre = e.target.getAttribute('data-nombre');
-            insumoSeleccionadoInput.value = nombre;
+        if (filaSeleccionada) {
+            filaSeleccionada.classList.remove('resaltado');
+            filaSeleccionada = null;
         }
     });
 
-    // --- BUSCADOR de insumos ---
     buscador.addEventListener('input', (e) => {
         renderizarInsumos(e.target.value);
     });
 
-
     // =============================================================
-    // 7. INICIALIZACIÓN
+    // 6. INICIALIZACIÓN
     // =============================================================
     actualizarVista();
 
